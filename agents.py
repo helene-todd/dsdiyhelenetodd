@@ -9,12 +9,6 @@ class Agent :
         this.env = environment
 
 
-    def initHistory(this):
-        '''initializes the history array and begins with a random arm'''
-        first_arm = np.random.randint(0,this.env.arms_nb)
-        this.history = np.array([[first_arm, this.env.getReward(first_arm)]])
-
-
     def getHistory(this):
         '''accessor of actions and rewards history so far'''
         return this.history
@@ -37,6 +31,7 @@ class Agent :
     def bestArmSoFar(this):
         '''returns best arm based on information from past actions'''
         bestMean = 0
+        bestArm = this.getCurrentState()[0] # default value to avoid errors
         for u in this.history:
             # calculate mean reward for each action, i.e. mean reward of machine
             average = np.mean(this.history[np.where(this.history[:,0] == u[0])][:, 1])
@@ -51,6 +46,13 @@ class EpsilonGreedyAgent(Agent):
     def __init__(this, environment, epsilon):
         super(EpsilonGreedyAgent, this).__init__(environment)
         this.epsilon = epsilon
+
+
+    def initHistory(this):
+        '''initializes the history array and begins with the best estimated arm over 10 draws'''
+        rewardsAnalysis = [this.env.getReward(i,size=10) for i in range(this.env.arms_nb)]
+        first_arm = rewardsAnalysis.index(max(rewardsAnalysis))
+        this.history = np.array([[first_arm, this.env.getReward(first_arm)]])
 
 
     def nextState(this):

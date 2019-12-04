@@ -5,10 +5,10 @@ import random as random
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-random.seed(42)
-np.random.seed(42)
+random.seed()
+np.random.seed()
 
-# Here, we consider slot machines as one-armed bandits. 
+# Here, we consider slot machines as one-armed bandits.
 
 class Environment :
     ''' Environment class '''
@@ -46,17 +46,20 @@ class GaussianEnvironment(Environment):
         print(f"In this environment there are {this.arms_nb} bandit arms that give rewards following a gaussian distribution")
 
 
-    def getReward(this, n):
+    def getReward(this, n, size=1):
         '''returns reward for arm n
-        takes 1 argument : n the number of the arm'''
-        reward = np.random.normal(this.arms_parameters[n][0], this.arms_parameters[n][1])
+        takes 2 arguments : n the number of the arm
+                            size the number of draws'''
+        reward = 0
+        for i in range(size):
+            reward += np.random.normal(this.arms_parameters[n][0], this.arms_parameters[n][1])
         return round(reward, 2)
 
 
     def showArmDistribution(this):
         '''shows (and saves) a plot of the distribution of rewards from each arm'''
         plt.figure(figsize=(10,5))
-        pastels = sns.color_palette("pastel")
+        pastels = sns.color_palette("pastel", this.arms_nb)
         dataList = []
 
         for i, p in enumerate(this.arms_parameters):
@@ -91,10 +94,12 @@ class BernoulliEnvironment(Environment):
         print(f"In this environment there are {this.arms_nb} bandit arms that give rewards following a bernoulli distribution")
 
 
-    def getReward(this, n):
-        '''returns reward for arm n
-        takes 1 argument : n the number of the arm'''
-        reward = np.random.binomial(1,this.arms_parameters[n])
+    def getReward(this, n, size=1):
+        '''takes 2 arguments : n the number of the arm
+                            size the number of draws'''
+        reward = 0
+        for i in range(size):
+            reward = np.random.binomial(1,this.arms_parameters[n])
         return reward
 
 
@@ -107,7 +112,7 @@ class BernoulliEnvironment(Environment):
             dataList = np.append(dataList, [np.sum(np.random.binomial(1,i,size=100))])
         dataList = dataList/100
 
-        plt.bar(np.arange(this.arms_nb), dataList, align='center', alpha=0.5, color= sns.color_palette("pastel"))
+        plt.bar(np.arange(this.arms_nb), dataList, align='center', alpha=0.5, color= sns.color_palette("pastel", this.arms_nb))
         plt.xticks(np.arange(this.arms_nb))
         plt.xlabel('Slot Machine Number')
         plt.ylabel('Rewards Distribution')
@@ -133,10 +138,12 @@ class ConstantEnvironment(Environment):
         print(f"In this environment there are {this.arms_nb} bandit arms that give constant rewards")
 
 
-    def getReward(this, n):
-        '''returns reward for arm n
-        takes 1 argument : n the number of the arm'''
-        reward = this.arms_parameters[n]
+    def getReward(this, n, size=1):
+        '''takes 2 arguments : n the number of the arm
+                            size the number of draws'''
+        reward = 0
+        for i in range(size):
+            reward = this.arms_parameters[n]
         return reward
 
 
@@ -144,7 +151,7 @@ class ConstantEnvironment(Environment):
         '''shows (and saves) a plot of the distribution of rewards from each arm'''
         plt.figure(figsize=(10,5))
 
-        plt.scatter(np.arange(this.arms_nb), [p for p in this.arms_parameters], marker='o', linestyle='None', color= sns.color_palette("pastel"))
+        plt.scatter(np.arange(this.arms_nb), [p for p in this.arms_parameters], marker='o', linestyle='None', color= sns.color_palette("pastel", this.arms_nb))
 
         plt.xlabel('Slot Machine Number')
         plt.xticks(np.arange(this.arms_nb))
